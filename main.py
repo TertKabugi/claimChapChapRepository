@@ -39,7 +39,8 @@ print('------------------------------------------------------------------------'
 
 # variables
 all_var = list(dataframe.columns)
-print(len(all_var))
+print(all_var)
+print('All Variables = ', len(all_var))
 
 # continuous variables [ordinal, interval, ratio]
 cont_var = ['months_as_customer', 'age', 'policy_bind_date', 'policy_deductible', 'policy_annual_premium',
@@ -53,4 +54,6 @@ print('continuous variables = ', len(cont_var))
 ord_var = ['policy_deductible', 'witnesses', 'bodily_injuries', 'incident_severity']
 print('ordinal variables = ', len(ord_var))
 
-
+# interval & ratio variables
+quan_var = (list(set(cont_var) - set(ord_var)))
+print('Interval & Ratio variables = ', len(quan_var))
