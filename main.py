@@ -10,7 +10,10 @@ print('------------------------------------------------------------------------'
 
 # feature engineering
 dataframe = dataset.drop(dataset.columns[[4, 9, 17, 22, 23, 24, 39]], axis=1)
+# extract out the year as
+dataframe['policy_bind_year'] = dataframe['policy_bind_date'].str.extract('(\d{4})\-').astype('int32')
 print(dataframe.info())
+
 
 dataframe['auto_make'] = dataframe['auto_make'].replace("Suburu", "Subaru")
 dataframe['collision_type'] = dataframe['collision_type'].replace("?", "Undocumented")
@@ -57,3 +60,58 @@ print('ordinal variables = ', len(ord_var))
 # interval & ratio variables
 quan_var = (list(set(cont_var) - set(ord_var)))
 print('Interval & Ratio variables = ', len(quan_var))
+
+# nominal variables
+nom_var = (list(set(all_var) - set(cont_var)))
+print('Nominal Variables = ', len(nom_var))
+print("---------------------------------------------")
+print(" ")
+
+# determining categories in nominal variable columns
+for col in nom_var:
+    print('###', col, '###')
+    print(dataframe[col].value_counts())
+    print("---------------------------------------------")
+
+# finding columns with many categories
+print(" ")
+large_category = []
+for col in nom_var:
+    if dataframe[col].nunique() > 20:
+        large_category.append(col)
+        print(col, dataframe[col].nunique())
+    else:
+        pass
+    # policy_number(1000) has many categories
+
+# auto model dummies
+large_dummy = pd.get_dummies(dataframe['auto_model'], drop_first=True)
+large_dummy['fraud_reported'] = dataframe['fraud_reported']
+large_dummy['fraud_reported'] = dataframe['fraud_reported'].map({'Y': 1, 'N': 0})
+print(" ")
+print(large_dummy.head())
+
+
+# large dummy confusion matrix
+def color(val):
+    shade = 'green' if val == 1 else 'red' if val < -0.3 else 'blue' if val > 0.3 else 'black'
+    return 'color: %s' % shade
+
+
+corr = large_dummy.corr()
+corr.style.applymap(color)
+print(corr)
+
+# remove variables from analysis
+dataframe.drop(large_category, axis=1, inplace=True)
+
+nom_var.remove('fraud_reported')
+nom_var = (list(set(nom_var) - set(large_category)))
+print(' ')
+print('total variable count:{} '.format(len(list(dataframe.columns))))
+print(list(dataframe.columns))
+print('continuous variables:{}'.format(len(cont_var)))
+print(list(cont_var))
+print('nominal variables:{}'.format(len(nom_var)))
+print(list(nom_var))
+
